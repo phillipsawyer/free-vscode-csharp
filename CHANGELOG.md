@@ -4,6 +4,24 @@
 - Debug from .csproj and .sln [#5876](https://github.com/dotnet/vscode-csharp/issues/5876)
 
 # Latest
+* Update Razor to use source generator shipped in extension instead of the SDK (PR: [#7134](https://github.com/dotnet/vscode-csharp/pull/7134))
+  * Fixes incorrect 'Amibuity between' errors displaying in Razor files (Issue: [#10351](https://github.com/dotnet/razor/issues/10351))
+* Update Roslyn to 4.11.0-2.24267.3 (PR: [#7134](https://github.com/dotnet/vscode-csharp/pull/7134))
+  * Allow Razor to use source generator shipped with tooling (PR: [#73524](https://github.com/dotnet/roslyn/pull/73524))
+  * Various performance improvements and allocation reductions
+    * Reduce allocations in retrieving text from parsed trees (PR: [#73512](https://github.com/dotnet/roslyn/pull/73512))
+    * Improve code action performance (PR: [#73493](https://github.com/dotnet/roslyn/pull/73493))
+    * Reduce more allocations in formatting. (PR: [#73487](https://github.com/dotnet/roslyn/pull/73487))
+    * Reduce allocations in formatting. (PR: [#73475](https://github.com/dotnet/roslyn/pull/73475))
+    * Reduce allocations in simplification (PR: [#73473](https://github.com/dotnet/roslyn/pull/73473))
+    * Remove array allocations for formatting rules. (PR: [#73458](https://github.com/dotnet/roslyn/pull/73458))
+    * Optimize suppress operations during formatting. (PR: [#73456](https://github.com/dotnet/roslyn/pull/73456))
+    * Produce less string allocs while formatting documents (PR: [#73452](https://github.com/dotnet/roslyn/pull/73452))
+    * Improve memory allocs in interval trees (PR: [#73451](https://github.com/dotnet/roslyn/pull/73451))
+  * Switch to System.Text.Json serialization in LSP server (PR: [#73207](https://github.com/dotnet/roslyn/pull/73207))
+  * Add dynamic registration for razor and cshtml files (PR: [#73369](https://github.com/dotnet/roslyn/pull/73369))
+
+# 2.30.24
 * XAML IntelliSense for .NET MAUI (Issue: [#565](https://github.com/microsoft/vscode-dotnettools/issues/565))
   * Controlled by feature flag `dotnet.enableXamlTools` which is on by default
   * Requires C# Dev Kit and .NET MAUI extensions
