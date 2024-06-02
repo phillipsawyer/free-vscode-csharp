@@ -314,6 +314,8 @@ export class DebugAdapterExecutableFactory implements vscode.DebugAdapterDescrip
                 }
                 if (pipeTransport.debuggerArgs) {
                     args = pipeTransport.debuggerArgs;
+                } else {
+                    args.push('--interpreter=vscode', '--');
                 }
                 if (pipeTransport.pipeProgram) {
                     args.push(pipeTransport.pipeProgram);
