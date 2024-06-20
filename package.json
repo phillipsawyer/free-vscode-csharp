@@ -2306,9 +2306,6 @@
               "pipeTransport": {
                 "description": "%generateOptionsSchema.pipeTransport.description%",
                 "type": "object",
-                "required": [
-                  "debuggerPath"
-                ],
                 "default": {
                   "pipeCwd": "${workspaceFolder}",
                   "pipeProgram": "enter the fully qualified path for the pipe program name, for example '/usr/bin/ssh'",
@@ -2838,9 +2835,6 @@
               "pipeTransport": {
                 "description": "%generateOptionsSchema.pipeTransport.description%",
                 "type": "object",
-                "required": [
-                  "debuggerPath"
-                ],
                 "default": {
                   "pipeCwd": "${workspaceFolder}",
                   "pipeProgram": "enter the fully qualified path for the pipe program name, for example '/usr/bin/ssh'",
@@ -3646,9 +3640,6 @@
               "pipeTransport": {
                 "description": "%generateOptionsSchema.pipeTransport.description%",
                 "type": "object",
-                "required": [
-                  "debuggerPath"
-                ],
                 "default": {
                   "pipeCwd": "${workspaceFolder}",
                   "pipeProgram": "enter the fully qualified path for the pipe program name, for example '/usr/bin/ssh'",
@@ -4178,9 +4169,6 @@
               "pipeTransport": {
                 "description": "%generateOptionsSchema.pipeTransport.description%",
                 "type": "object",
-                "required": [
-                  "debuggerPath"
-                ],
                 "default": {
                   "pipeCwd": "${workspaceFolder}",
                   "pipeProgram": "enter the fully qualified path for the pipe program name, for example '/usr/bin/ssh'",

@@ -283,14 +283,49 @@ export class DebugAdapterExecutableFactory implements vscode.DebugAdapterDescrip
         // debugger has finished installation, kick off our debugger process
 
         // use the executable specified in the package.json if it exists or determine it based on some other information (e.g. the session)
-        if (!executable) {
+        const pipeTransport = _session.configuration.pipeTransport;
+        if (!executable || typeof pipeTransport === 'object') {
+            // Look to see if DOTNET_ROOT is set, then use dotnet cli path
             const dotNetInfo = await getDotnetInfo(omnisharpOptions.dotNetCliPaths);
-            const pipeTransport = _session.configuration.pipeTransport;
+            const dotnetRoot: string =
+                process.env.DOTNET_ROOT ?? (dotNetInfo.CliPath ? path.dirname(dotNetInfo.CliPath) : '');
+
+            let options: vscode.DebugAdapterExecutableOptions = {};
+            if (dotnetRoot) {
+                options = {
+                    env: {
+                        DOTNET_ROOT: dotnetRoot,
+                    },
+                };
+            }
+
             let command = '';
-            let args = ['--interpreter=vscode'];
+            let args = [];
             if (typeof pipeTransport === 'object') {
-                command = pipeTransport.debuggerPath;
-                args = pipeTransport.pipeArgs;
+                if (pipeTransport.debuggerPath) {
+                    command = pipeTransport.debuggerPath;
+                } else {
+                    command = path.join(
+                        common.getExtensionPath(),
+                        '.debugger',
+                        'netcoredbg',
+                        'netcoredbg' + CoreClrDebugUtil.getPlatformExeExtension()
+                    );
+                }
+                if (pipeTransport.debuggerArgs) {
+                    args = pipeTransport.debuggerArgs;
+                } else {
+                    args.push('--interpreter=vscode', '--');
+                }
+                if (pipeTransport.pipeProgram) {
+                    args.push(pipeTransport.pipeProgram);
+                }
+                if (pipeTransport.pipeArgs) {
+                    args.push(pipeTransport.pipeArgs);
+                }
+                if (pipeTransport.pipeCwd) {
+                    options.cwd = pipeTransport.pipeCwd;
+                }
             } else {
                 command = path.join(
                     common.getExtensionPath(),
@@ -298,19 +333,7 @@ export class DebugAdapterExecutableFactory implements vscode.DebugAdapterDescrip
                     'netcoredbg',
                     'netcoredbg' + CoreClrDebugUtil.getPlatformExeExtension()
                 );
-            }
-
-            // Look to see if DOTNET_ROOT is set, then use dotnet cli path
-            const dotnetRoot: string =
-                process.env.DOTNET_ROOT ?? (dotNetInfo.CliPath ? path.dirname(dotNetInfo.CliPath) : '');
-
-            let options: vscode.DebugAdapterExecutableOptions | undefined = undefined;
-            if (dotnetRoot) {
-                options = {
-                    env: {
-                        DOTNET_ROOT: dotnetRoot,
-                    },
-                };
+                args = ['--interpreter=vscode'];
             }
 
             executable = new vscode.DebugAdapterExecutable(command, args, options);
