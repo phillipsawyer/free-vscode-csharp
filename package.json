@@ -1,7 +1,7 @@
 {
   "name": "csharp",
   "publisher": "muhammad-sammy",
-  "version": "2.31.19",
+  "version": "2.34.12",
   "description": "Free/Libre C# support for vscode-compatible editors.",
   "displayName": "C#",
   "author": "Muhammad Sammy",
@@ -37,12 +37,12 @@
     }
   },
   "defaults": {
-    "roslyn": "4.11.0-2.24267.3",
+    "roslyn": "4.11.0-3.24307.2",
     "omniSharp": "1.39.11",
     "razor": "7.0.0-preview.24266.1",
     "razorOmnisharp": "7.0.0-preview.23363.1",
     "razorTelemetry": "7.0.0-preview.24178.4",
-    "xamlTools": "17.11.34917.22"
+    "xamlTools": "17.11.34931.156"
   },
   "main": "./dist/extension",
   "l10n": "./l10n",
