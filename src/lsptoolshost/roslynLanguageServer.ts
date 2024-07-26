@@ -37,7 +37,6 @@ import ShowInformationMessage from '../shared/observers/utils/showInformationMes
 import * as RoslynProtocol from './roslynProtocol';
 import { CSharpDevKitExports } from '../csharpDevKitExports';
 import { SolutionSnapshotId } from './services/ISolutionSnapshotProvider';
-import { ServerStateChange } from './serverStateChange';
 import CSharpIntelliCodeExports from '../csharpIntelliCodeExports';
 import { csharpDevkitExtensionId, csharpDevkitIntelliCodeExtensionId, getCSharpDevKit } from '../utils/getCSharpDevKit';
 import { randomUUID } from 'crypto';
@@ -63,6 +62,8 @@ import { registerRestoreCommands } from './restore';
 import { BuildDiagnosticsService } from './buildDiagnosticsService';
 import { getComponentPaths } from './builtInComponents';
 import { OnAutoInsertFeature } from './onAutoInsertFeature';
+import { registerLanguageStatusItems } from './languageStatusBar';
+import { ProjectContextService } from './services/projectContextService';
 
 let _channel: vscode.OutputChannel;
 let _traceChannel: vscode.OutputChannel;
@@ -104,6 +105,7 @@ export class RoslynLanguageServer {
     public readonly _onAutoInsertFeature: OnAutoInsertFeature;
 
     public _buildDiagnosticService: BuildDiagnosticsService;
+    public _projectContextService: ProjectContextService;
 
     constructor(
         private _languageClient: RoslynLanguageClient,
@@ -113,7 +115,7 @@ export class RoslynLanguageServer {
     ) {
         this.registerSetTrace();
         this.registerSendOpenSolution();
-        this.registerOnProjectInitializationComplete();
+        this.registerProjectInitialization();
         this.registerReportProjectConfiguration();
         this.registerExtensionsChanged();
         this.registerTelemetryChanged();
@@ -122,12 +124,16 @@ export class RoslynLanguageServer {
         this._buildDiagnosticService = new BuildDiagnosticsService(diagnosticsReportedByBuild);
         this.registerDocumentOpenForDiagnostics();
 
+        this._projectContextService = new ProjectContextService(this, this._languageServerEvents);
+
         // Register Razor dynamic file info handling
         this.registerDynamicFileInfo();
 
         this.registerDebuggerAttach();
 
         registerShowToastNotification(this._languageClient);
+
+        registerOnAutoInsert(this, this._languageClient);
 
         this._onAutoInsertFeature = new OnAutoInsertFeature(this._languageClient);
     }
@@ -153,14 +159,20 @@ export class RoslynLanguageServer {
                     await this.openDefaultSolutionOrProjects();
                 }
                 await this.sendOrSubscribeForServiceBrokerConnection();
-                this._languageServerEvents.onServerStateChangeEmitter.fire(ServerStateChange.Started);
+                this._languageServerEvents.onServerStateChangeEmitter.fire({
+                    state: ServerState.Started,
+                    workspaceLabel: this.workspaceDisplayName(),
+                });
             }
         });
     }
 
-    private registerOnProjectInitializationComplete() {
+    private registerProjectInitialization() {
         this._languageClient.onNotification(RoslynProtocol.ProjectInitializationCompleteNotification.type, () => {
-            this._languageServerEvents.onServerStateChangeEmitter.fire(ServerStateChange.ProjectInitializationComplete);
+            this._languageServerEvents.onServerStateChangeEmitter.fire({
+                state: ServerState.ProjectInitializationComplete,
+                workspaceLabel: this.workspaceDisplayName(),
+            });
         });
     }
 
@@ -242,6 +254,16 @@ export class RoslynLanguageServer {
 
     public async restart(): Promise<void> {
         await this._languageClient.restart();
+    }
+
+    public workspaceDisplayName(): string {
+        if (this._solutionFile !== undefined) {
+            return path.basename(this._solutionFile.fsPath);
+        } else if (this._projectFiles?.length > 0) {
+            return vscode.l10n.t('Workspace projects');
+        }
+
+        return '';
     }
 
     /**
@@ -361,16 +383,20 @@ export class RoslynLanguageServer {
                 await this._languageClient.sendNotification(RoslynProtocol.OpenSolutionNotification.type, {
                     solution: protocolUri,
                 });
-            }
-
-            if (this._projectFiles.length > 0) {
+            } else if (this._projectFiles.length > 0) {
                 const projectProtocolUris = this._projectFiles.map((uri) =>
                     this._languageClient.clientOptions.uriConverters!.code2Protocol(uri)
                 );
                 await this._languageClient.sendNotification(RoslynProtocol.OpenProjectNotification.type, {
                     projects: projectProtocolUris,
                 });
+            } else {
+                return;
             }
+            this._languageServerEvents.onServerStateChangeEmitter.fire({
+                state: ServerState.ProjectInitializationStarted,
+                workspaceLabel: this.workspaceDisplayName(),
+            });
         }
     }
 
@@ -791,10 +817,11 @@ export class RoslynLanguageServer {
         // Subscribe to telemetry events so we can enable/disable as needed
         this._languageClient.addDisposable(
             vscode.env.onDidChangeTelemetryEnabled((_: boolean) => {
-                const title = 'Restart Language Server';
+                const title = vscode.l10n.t('Restart Language Server');
                 const command = 'dotnet.restartServer';
-                const message =
-                    'Detected change in telemetry settings. These will not take effect until the language server is restarted, would you like to restart?';
+                const message = vscode.l10n.t(
+                    'Detected change in telemetry settings. These will not take effect until the language server is restarted, would you like to restart?'
+                );
                 ShowInformationMessage(vscode, message, { title, command });
             })
         );
@@ -954,6 +981,8 @@ export async function activateRoslynLanguageServer(
         languageServerEvents
     );
 
+    registerLanguageStatusItems(context, languageServer, languageServerEvents);
+
     // Register any commands that need to be handled by the extension.
     registerCommands(context, languageServer, hostExecutableResolver, _channel);
     registerNestedCodeActionCommands(context, languageServer, _channel);
@@ -967,8 +996,6 @@ export async function activateRoslynLanguageServer(
     registerDebugger(context, languageServer, languageServerEvents, platformInfo, _channel);
 
     registerRestoreCommands(context, languageServer, dotnetChannel);
-
-    registerOnAutoInsert(languageServer);
 
     context.subscriptions.push(registerLanguageServerOptionChanges(optionObservable));
 

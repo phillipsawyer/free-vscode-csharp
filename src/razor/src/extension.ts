@@ -12,11 +12,10 @@ import type { PlatformInformation } from '../../shared/platform';
 import type { IEventEmitterFactory } from './IEventEmitterFactory';
 import { BlazorDebugConfigurationProvider } from './blazorDebug/blazorDebugConfigurationProvider';
 import { CodeActionsHandler } from './codeActions/codeActionsHandler';
+import { CompletionHandler } from './completion/completionHandler';
 import { RazorCodeActionRunner } from './codeActions/razorCodeActionRunner';
 import { RazorCodeLensProvider } from './codeLens/razorCodeLensProvider';
 import { ColorPresentationHandler } from './colorPresentation/colorPresentationHandler';
-import { ProvisionalCompletionOrchestrator } from './completion/provisionalCompletionOrchestrator';
-import { RazorCompletionItemProvider } from './completion/razorCompletionItemProvider';
 import { listenToConfigurationChanges } from './configurationChangeListener';
 import { RazorCSharpFeature } from './csharp/razorCSharpFeature';
 import { RazorDefinitionProvider } from './definition/razorDefinitionProvider';
@@ -135,6 +134,13 @@ export async function activate(
             languageServerClient,
             logger
         );
+        const completionHandler = new CompletionHandler(
+            documentManager,
+            documentSynchronizer,
+            languageServerClient,
+            csharpFeature.projectionProvider,
+            logger
+        );
 
         // Our dynamic file handler needs to be registered regardless of whether the Razor language server starts
         // since the Roslyn implementation expects the dynamic file commands to always be registered.
@@ -142,12 +148,6 @@ export async function activate(
         dynamicFileInfoProvider.register();
 
         languageServerClient.onStart(async () => {
-            const provisionalCompletionOrchestrator = new ProvisionalCompletionOrchestrator(
-                documentManager,
-                csharpFeature.projectionProvider,
-                languageServiceClient,
-                logger
-            );
             const semanticTokenHandler = new SemanticTokensRangeHandler(
                 documentManager,
                 documentSynchronizer,
@@ -177,14 +177,6 @@ export async function activate(
                 documentManager,
                 documentSynchronizer,
                 languageServerClient,
-                logger
-            );
-
-            const completionItemProvider = new RazorCompletionItemProvider(
-                documentSynchronizer,
-                documentManager,
-                languageServiceClient,
-                provisionalCompletionOrchestrator,
                 logger
             );
             const signatureHelpProvider = new RazorSignatureHelpProvider(
@@ -259,14 +251,6 @@ export async function activate(
 
             localRegistrations.push(
                 languageConfiguration.register(),
-                provisionalCompletionOrchestrator.register(),
-                vscodeType.languages.registerCompletionItemProvider(
-                    RazorLanguage.id,
-                    completionItemProvider,
-                    '.',
-                    '<',
-                    '@'
-                ),
                 vscodeType.languages.registerSignatureHelpProvider(RazorLanguage.id, signatureHelpProvider, '(', ','),
                 vscodeType.languages.registerDefinitionProvider(RazorLanguage.id, definitionProvider),
                 vscodeType.languages.registerImplementationProvider(RazorLanguage.id, implementationProvider),
@@ -300,6 +284,7 @@ export async function activate(
                 semanticTokenHandler.register(),
                 razorDiagnosticHandler.register(),
                 codeActionsHandler.register(),
+                completionHandler.register(),
                 razorSimplifyMethodHandler.register(),
                 razorFormatNewFileHandler.register(),
             ]);

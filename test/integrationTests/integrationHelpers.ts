@@ -7,7 +7,7 @@ import * as vscode from 'vscode';
 import * as path from 'path';
 import { CSharpExtensionExports } from '../../src/csharpExtensionExports';
 import { existsSync } from 'fs';
-import { ServerStateChange } from '../../src/lsptoolshost/serverStateChange';
+import { ServerState } from '../../src/lsptoolshost/serverStateChange';
 import testAssetWorkspace from './testAssets/testAssetWorkspace';
 
 export async function activateCSharpExtension(): Promise<void> {
@@ -16,7 +16,9 @@ export async function activateCSharpExtension(): Promise<void> {
     const dotnetRuntimeExtension =
         vscode.extensions.getExtension<CSharpExtensionExports>(vscodeDotnetRuntimeExtensionId);
     if (!dotnetRuntimeExtension) {
-        await vscode.commands.executeCommand('workbench.extensions.installExtension', vscodeDotnetRuntimeExtensionId);
+        await vscode.commands.executeCommand('workbench.extensions.installExtension', vscodeDotnetRuntimeExtensionId, {
+            donotSync: true,
+        });
         await vscode.commands.executeCommand('workbench.action.reloadWindow');
     }
 
@@ -58,12 +60,20 @@ export async function openFileInWorkspaceAsync(relativeFilePath: string): Promis
     return uri;
 }
 
+/**
+ * Reverts any unsaved changes to the active file.
+ * Useful to reset state between tests without fully reloading everything.
+ */
+export async function revertActiveFile(): Promise<void> {
+    await vscode.commands.executeCommand('workbench.action.files.revert');
+}
+
 export async function restartLanguageServer(): Promise<void> {
     const csharpExtension = vscode.extensions.getExtension<CSharpExtensionExports>('ms-dotnettools.csharp');
     // Register to wait for initialization events and restart the server.
     const waitForInitialProjectLoad = new Promise<void>((resolve, _) => {
-        csharpExtension!.exports.experimental.languageServerEvents.onServerStateChange(async (state) => {
-            if (state === ServerStateChange.ProjectInitializationComplete) {
+        csharpExtension!.exports.experimental.languageServerEvents.onServerStateChange(async (e) => {
+            if (e.state === ServerState.ProjectInitializationComplete) {
                 resolve();
             }
         });
@@ -111,4 +121,34 @@ function isGivenSln(workspace: typeof vscode.workspace, expectedProjectFileName:
     const projectFileName = primeWorkspace.uri.fsPath.split(path.sep).pop();
 
     return projectFileName === expectedProjectFileName;
+}
+
+export async function waitForExpectedResult<T>(
+    getValue: () => Promise<T> | T,
+    duration: number,
+    step: number,
+    expression: (input: T) => void
+): Promise<void> {
+    let value: T;
+    let error: any = undefined;
+
+    while (duration > 0) {
+        value = await getValue();
+
+        try {
+            expression(value);
+            return;
+        } catch (e) {
+            error = e;
+            // Wait for a bit and try again.
+            await new Promise((r) => setTimeout(r, step));
+            duration -= step;
+        }
+    }
+
+    throw new Error(`Polling did not succeed within the alotted duration: ${error}`);
+}
+
+export async function sleep(ms = 0) {
+    return new Promise((r) => setTimeout(r, ms));
 }

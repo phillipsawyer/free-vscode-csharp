@@ -22,7 +22,6 @@ import { OmnisharpLoggerObserver } from './observers/omnisharpLoggerObserver';
 import { OmnisharpStatusBarObserver } from './observers/omnisharpStatusBarObserver';
 import { PlatformInformation } from './shared/platform';
 import { StatusBarItemAdapter } from './statusBarItemAdapter';
-import { addJSONProviders } from './features/json/jsonContributions';
 import { ProjectStatusBarObserver } from './observers/projectStatusBarObserver';
 import { vscodeNetworkSettingsProvider } from './networkSettings';
 import { ErrorMessageObserver } from './observers/errorMessageObserver';
@@ -51,9 +50,8 @@ import { RazorOmnisharpDownloader } from './razor/razorOmnisharpDownloader';
 import { RoslynLanguageServerExport } from './lsptoolshost/roslynLanguageServerExportChannel';
 import { registerOmnisharpOptionChanges } from './omnisharp/omnisharpOptionChanges';
 import { RoslynLanguageServerEvents } from './lsptoolshost/languageServerEvents';
-import { ServerStateChange } from './lsptoolshost/serverStateChange';
+import { ServerState } from './lsptoolshost/serverStateChange';
 import { SolutionSnapshotProvider } from './lsptoolshost/services/solutionSnapshotProvider';
-import { RazorTelemetryDownloader } from './razor/razorTelemetryDownloader';
 import { commonOptions, languageServerOptions, omnisharpOptions, razorOptions } from './shared/options';
 import { BuildResultDiagnostics } from './lsptoolshost/services/buildResultReporterService';
 import { debugSessionTracker } from './coreclrDebug/provisionalDebugSessionTracker';
@@ -122,21 +120,6 @@ export async function activate(
     let projectInitializationCompletePromise: Promise<void> | undefined = undefined;
 
     if (!useOmnisharpServer) {
-        // Download Razor server telemetry bits if DevKit is installed.
-        if (csharpDevkitExtension && vscode.env.isTelemetryEnabled) {
-            const razorTelemetryDownloader = new RazorTelemetryDownloader(
-                networkSettingsProvider,
-                eventStream,
-                context.extension.packageJSON,
-                platformInfo,
-                context.extension.extensionPath
-            );
-
-            await razorTelemetryDownloader.DownloadAndInstallRazorTelemetry(
-                context.extension.packageJSON.defaults.razorTelemetry
-            );
-        }
-
         // Activate Razor. Needs to be activated before Roslyn so commands are registered in the correct order.
         // Otherwise, if Roslyn starts up first, they could execute commands that don't yet exist on Razor's end.
         //
@@ -156,8 +139,8 @@ export async function activate(
 
         // Setup a listener for project initialization complete before we start the server.
         projectInitializationCompletePromise = new Promise((resolve, _) => {
-            roslynLanguageServerEvents.onServerStateChange(async (state) => {
-                if (state === ServerStateChange.ProjectInitializationComplete) {
+            roslynLanguageServerEvents.onServerStateChange(async (e) => {
+                if (e.state === ServerState.ProjectInitializationComplete) {
                     resolve();
                 }
             });
@@ -271,8 +254,6 @@ export async function activate(
 
         context.subscriptions.push(registerOmnisharpOptionChanges(optionStream));
 
-        // register JSON completion & hover providers for project.json
-        context.subscriptions.push(addJSONProviders());
         context.subscriptions.push(
             vscode.window.onDidChangeActiveTextEditor(() => {
                 eventStream.post(new ActiveTextEditorChanged());
@@ -292,12 +273,15 @@ export async function activate(
     }
 
     if (!isSupportedPlatform(platformInfo)) {
-        let errorMessage = `The C# extension for Visual Studio Code is incompatible on ${platformInfo.platform} ${platformInfo.architecture}`;
-
         // Check to see if VS Code is running remotely
         if (context.extension.extensionKind === vscode.ExtensionKind.Workspace) {
-            const setupButton = 'How to setup Remote Debugging';
-            errorMessage += ` with the VS Code Remote Extensions. To see avaliable workarounds, click on '${setupButton}'.`;
+            const setupButton = vscode.l10n.t('How to setup Remote Debugging');
+            const errorMessage = vscode.l10n.t(
+                `The C# extension for Visual Studio Code is incompatible on {0} {1} with the VS Code Remote Extensions. To see avaliable workarounds, click on '{2}'.`,
+                platformInfo.platform,
+                platformInfo.architecture,
+                setupButton
+            );
 
             await vscode.window.showErrorMessage(errorMessage, setupButton).then((selectedItem) => {
                 if (selectedItem === setupButton) {
@@ -307,6 +291,11 @@ export async function activate(
                 }
             });
         } else {
+            const errorMessage = vscode.l10n.t(
+                'The C# extension for Visual Studio Code is incompatible on {0} {1}.',
+                platformInfo.platform,
+                platformInfo.architecture
+            );
             await vscode.window.showErrorMessage(errorMessage);
         }
 
