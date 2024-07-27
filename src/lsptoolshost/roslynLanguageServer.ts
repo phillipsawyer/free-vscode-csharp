@@ -64,6 +64,7 @@ import { getComponentPaths } from './builtInComponents';
 import { OnAutoInsertFeature } from './onAutoInsertFeature';
 import { registerLanguageStatusItems } from './languageStatusBar';
 import { ProjectContextService } from './services/projectContextService';
+import { ServerState } from './serverStateChange';
 
 let _channel: vscode.OutputChannel;
 let _traceChannel: vscode.OutputChannel;
