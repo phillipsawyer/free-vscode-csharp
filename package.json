@@ -37,11 +37,11 @@
     }
   },
   "defaults": {
-    "roslyn": "4.12.0-1.24359.11",
+    "roslyn": "4.12.0-2.24461.7",
     "omniSharp": "1.39.11",
-    "razor": "9.0.0-preview.24365.1",
+    "razor": "9.0.0-preview.24418.1",
     "razorOmnisharp": "7.0.0-preview.23363.1",
-    "xamlTools": "17.12.35112.24"
+    "xamlTools": "17.12.35304.30"
   },
   "main": "./dist/extension",
   "l10n": "./l10n",
@@ -779,7 +779,7 @@
         "title": "Text Editor",
         "order": 1,
         "properties": {
-          "dotnet.implementType.insertionBehavior": {
+          "dotnet.typeMembers.memberInsertionLocation": {
             "type": "string",
             "enum": [
               "withOtherMembersOfTheSameKind",
@@ -787,13 +787,13 @@
             ],
             "default": "withOtherMembersOfTheSameKind",
             "enumDescriptions": [
-              "%configuration.dotnet.implementType.insertionBehavior.withOtherMembersOfTheSameKind%",
-              "%configuration.dotnet.implementType.insertionBehavior.atTheEnd%"
+              "%configuration.dotnet.typeMembers.memberInsertionLocation.withOtherMembersOfTheSameKind%",
+              "%configuration.dotnet.typeMembers.memberInsertionLocation.atTheEnd%"
             ],
-            "description": "%configuration.dotnet.implementType.insertionBehavior%",
+            "description": "%configuration.dotnet.typeMembers.memberInsertionLocation%",
             "order": 10
           },
-          "dotnet.implementType.propertyGenerationBehavior": {
+          "dotnet.typeMembers.propertyGenerationBehavior": {
             "type": "string",
             "enum": [
               "preferThrowingProperties",
@@ -801,10 +801,10 @@
             ],
             "default": "preferThrowingProperties",
             "enumDescriptions": [
-              "%configuration.dotnet.implementType.propertyGenerationBehavior.preferThrowingProperties%",
-              "%configuration.dotnet.implementType.propertyGenerationBehavior.preferAutoProperties%"
+              "%configuration.dotnet.typeMembers.propertyGenerationBehavior.preferThrowingProperties%",
+              "%configuration.dotnet.typeMembers.propertyGenerationBehavior.preferAutoProperties%"
             ],
-            "description": "%configuration.dotnet.implementType.propertyGenerationBehavior%",
+            "description": "%configuration.dotnet.typeMembers.propertyGenerationBehavior%",
             "order": 10
           },
           "dotnet.codeLens.enableReferencesCodeLens": {
@@ -833,6 +833,12 @@
             "type": "boolean",
             "default": "true",
             "description": "%configuration.dotnet.completion.provideRegexCompletions%",
+            "order": 20
+          },
+          "dotnet.completion.triggerCompletionInArgumentLists": {
+            "type": "boolean",
+            "default": "true",
+            "description": "%configuration.dotnet.completion.triggerCompletionInArgumentLists%",
             "order": 20
           },
           "dotnet.backgroundAnalysis.analyzerDiagnosticsScope": {
@@ -955,6 +961,12 @@
             "type": "boolean",
             "default": "true",
             "description": "%configuration.dotnet.navigation.navigateToDecompiledSources%",
+            "order": 60
+          },
+          "dotnet.navigation.navigateToSourceLinkAndEmbeddedSources": {
+            "type": "boolean",
+            "default": "true",
+            "description": "%configuration.dotnet.navigation.navigateToSourceLinkAndEmbeddedSources%",
             "order": 60
           },
           "dotnet.quickInfo.showRemarksInQuickInfo": {
@@ -1509,16 +1521,21 @@
             "default": null,
             "description": "%configuration.dotnet.server.crashDumpPath%"
           },
+          "dotnet.server.suppressLspErrorToasts": {
+            "type": "boolean",
+            "default": false,
+            "description": "%configuration.dotnet.server.suppressLspErrorToasts%"
+          },
+          "dotnet.server.useServerGC": {
+            "type": "boolean",
+            "default": true,
+            "description": "%configuration.dotnet.server.useServerGC%"
+          },
           "dotnet.enableXamlTools": {
             "scope": "machine-overridable",
             "type": "boolean",
             "default": true,
             "description": "%configuration.dotnet.enableXamlTools%"
-          },
-          "dotnet.server.suppressLspErrorToasts": {
-            "type": "boolean",
-            "default": false,
-            "description": "%configuration.dotnet.server.suppressLspErrorToasts%"
           },
           "dotnet.projects.binaryLogPath": {
             "scope": "machine-overridable",
