@@ -5,7 +5,7 @@
 import * as tar from 'tar';
 import { Readable } from 'stream';
 import { EventStream } from '../eventStream';
-import { InstallationStart, ZipError } from '../omnisharp/loggingEvents';
+import { InstallationStart, ZipError } from '../shared/loggingEvents';
 import { NestedError } from '../nestedError';
 import { AbsolutePath } from './absolutePath';
 
