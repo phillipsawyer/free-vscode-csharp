@@ -41,7 +41,7 @@ const TelemetryReportingDelay = 2 * 60 * 1000; // two minutes
 export default class TestManager extends AbstractProvider {
     private _runCounts?: { [testFrameworkName: string]: number };
     private _debugCounts?: { [testFrameworkName: string]: number };
-    private _telemetryIntervalId?: NodeJS.Timer = undefined;
+    private _telemetryIntervalId?: NodeJS.Timeout = undefined;
     private _eventStream: EventStream;
 
     constructor(
@@ -190,7 +190,7 @@ export default class TestManager extends AbstractProvider {
         let projectInfo: protocol.ProjectInformationResponse;
         try {
             projectInfo = await serverUtils.requestProjectInformation(this._server, { FileName: fileName });
-        } catch (error) {
+        } catch (_) {
             return undefined;
         }
 
@@ -465,7 +465,7 @@ export default class TestManager extends AbstractProvider {
         let projectInfo: protocol.ProjectInformationResponse;
         try {
             projectInfo = await serverUtils.requestProjectInformation(this._server, { FileName: fileName });
-        } catch (error) {
+        } catch (_) {
             throw new Error('Could not determine project type.');
         }
 
@@ -704,11 +704,11 @@ class DebugEventListener {
         DebugEventListener.s_activeInstance = this;
 
         const serverSocket = net.createServer((socket) => {
-            socket.on('data', (buffer) => {
+            socket.on('data', async (buffer) => {
                 let event: DebuggerEventsProtocol.DebuggerEvent;
                 try {
                     event = DebuggerEventsProtocol.decodePacket(buffer);
-                } catch (e) {
+                } catch (_) {
                     this._eventStream.post(new DotNetTestDebugWarning('Invalid event received from debugger'));
                     return;
                 }
@@ -717,19 +717,19 @@ class DebugEventListener {
                     case DebuggerEventsProtocol.ProcessLaunched: {
                         const processLaunchedEvent = <DebuggerEventsProtocol.ProcessLaunchedEvent>event;
                         this._eventStream.post(new DotNetTestDebugProcessStart(processLaunchedEvent.targetProcessId));
-                        this.onProcessLaunched(processLaunchedEvent.targetProcessId);
+                        await this.onProcessLaunched(processLaunchedEvent.targetProcessId);
                         break;
                     }
 
                     case DebuggerEventsProtocol.DebuggingStopped:
                         this._eventStream.post(new DotNetTestDebugComplete());
-                        this.onDebuggingStopped();
+                        await this.onDebuggingStopped();
                         break;
                 }
             });
 
-            socket.on('end', () => {
-                this.onDebuggingStopped();
+            socket.on('end', async () => {
+                await this.onDebuggingStopped();
             });
         });
 
@@ -792,7 +792,7 @@ class DebugEventListener {
         }
     }
 
-    private onDebuggingStopped(): void {
+    private async onDebuggingStopped(): Promise<void> {
         if (this._isClosed) {
             return;
         }
@@ -801,9 +801,9 @@ class DebugEventListener {
             FileName: this._fileName,
         };
         try {
-            serverUtils.debugTestStop(this._server, request);
+            await serverUtils.debugTestStop(this._server, request);
             this.close();
-        } catch (error) {
+        } catch (_) {
             return;
         }
     }

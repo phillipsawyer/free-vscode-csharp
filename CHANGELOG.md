@@ -3,7 +3,28 @@
 - Diagnostics related feature requests and improvements [#5951](https://github.com/dotnet/vscode-csharp/issues/5951)
 - Debug from .csproj and .sln [#5876](https://github.com/dotnet/vscode-csharp/issues/5876)
 
-# Latest
+# 2.50.x
+* Update Roslyn to 4.13.0-1.24477.2 (PR: [#<>](https://github.com/dotnet/vscode-csharp/pull/<>))
+  * Use MSBuild globs to determine which file changes are relevant (PR: [#75139](https://github.com/dotnet/roslyn/pull/75139))
+  * Allow <code> in DocComments to render as a block in Hover response (PR: [#75215](https://github.com/dotnet/roslyn/pull/75215))
+  * Ignore irrelevant exceptions when reporting LSP server NFW (PR: [#75150](https://github.com/dotnet/roslyn/pull/75150))
+* Bumped xamltools to 17.12.35326.17 (PR: [#7610](https://github.com/dotnet/vscode-csharp/pull/7610))
+* Do not remove documents if they are not files (PR: [#7607](https://github.com/dotnet/vscode-csharp/pull/7607))
+* Support copilot registerRelatedFilesProvider API (PR: [#7605](https://github.com/dotnet/vscode-csharp/pull/7605))
+* Update Debugger packages to v2.50.0 (PR: [#7597](https://github.com/dotnet/vscode-csharp/pull/7597))
+
+# 2.49.x
+* Update Razor to 9.0.0-preview.24467.1
+  * Fix LF line-ending auto format bug (PR: [#10802](https://github.com/dotnet/razor/pull/10802))
+* Bumped xamltools to 17.12.35319.159 (PR: [#7583](https://github.com/dotnet/vscode-csharp/pull/7583))
+* Bump xamlTools to 17.12.35318.29 (PR: [#7577](https://github.com/dotnet/vscode-csharp/pull/7577))
+* Register Copilot `relatedFilesProvider` for C# (PR: [#7578](https://github.com/dotnet/vscode-csharp/pull/7578))
+* Update Roslyn to 4.12.0-3.24470.4 (PR: [#7589](https://github.com/dotnet/vscode-csharp/pull/7589))
+  * Remove ResultId from RelatedDocumentsHandler (PR: [#75176](https://github.com/dotnet/roslyn/pull/75176))
+  * Do not attempt to report EnC diagnostics for non-host workspaces (PR: [#75138](https://github.com/dotnet/roslyn/pull/75138))
+  * Allow Razor to get diagnostics for cohosting (PR: [#75102](https://github.com/dotnet/roslyn/pull/75102))
+Í
+# 2.48.x
 * Add signing support to VSIX (PR: [#7490](https://github.com/dotnet/vscode-csharp/pull/7490))
 * Update Debugger to v2.47.0 (PR: [#7547](https://github.com/dotnet/vscode-csharp/pull/7547))
   * Adds in support for .NET 9 Break for Async User-Unhandled

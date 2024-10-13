@@ -15,7 +15,7 @@ import {
 import { describe, beforeAll, beforeEach, afterAll, test, afterEach } from '@jest/globals';
 import { formatDocumentAsync, formatOnTypeAsync, formatRangeAsync } from './formattingTestHelpers';
 
-describe(`[${testAssetWorkspace.description}] Formatting With EditorConfig Tests`, () => {
+describe(`Formatting With EditorConfig Tests`, () => {
     beforeAll(async () => {
         await activateCSharpExtension();
     });
@@ -50,7 +50,7 @@ describe(`[${testAssetWorkspace.description}] Formatting With EditorConfig Tests
             '    }',
             '}',
         ];
-        expectText(vscode.window.activeTextEditor!.document, expectedText);
+        await expectText(vscode.window.activeTextEditor!.document, expectedText);
     });
 
     test('Document range formatting respects editorconfig', async () => {
@@ -72,7 +72,7 @@ describe(`[${testAssetWorkspace.description}] Formatting With EditorConfig Tests
             '    }',
             '}',
         ];
-        expectText(vscode.window.activeTextEditor!.document, expectedText);
+        await expectText(vscode.window.activeTextEditor!.document, expectedText);
     });
 
     test('Document on type formatting respects editorconfig', async () => {
@@ -95,6 +95,6 @@ describe(`[${testAssetWorkspace.description}] Formatting With EditorConfig Tests
             '    }',
             '}',
         ];
-        expectText(vscode.window.activeTextEditor!.document, expectedText);
+        await expectText(vscode.window.activeTextEditor!.document, expectedText);
     });
 });

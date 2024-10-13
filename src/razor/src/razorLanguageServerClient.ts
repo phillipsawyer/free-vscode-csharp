@@ -16,6 +16,7 @@ import { resolveRazorLanguageServerLogLevel } from './razorLanguageServerTraceRe
 import { RazorLogger } from './razorLogger';
 import { TelemetryReporter as RazorTelemetryReporter } from './telemetryReporter';
 import { randomUUID } from 'crypto';
+import { showErrorMessage } from '../../shared/observers/utils/showMessage';
 
 const events = {
     ServerStop: 'ServerStop',
@@ -127,7 +128,8 @@ export class RazorLanguageServerClient implements vscode.Disposable {
             // the language client will handle that.
             didChangeStateDisposable.dispose();
         } catch (error) {
-            vscode.window.showErrorMessage(
+            showErrorMessage(
+                vscode,
                 vscode.l10n.t(
                     "Razor Language Server failed to start unexpectedly, please check the 'Razor Log' and report an issue."
                 )
@@ -204,7 +206,8 @@ export class RazorLanguageServerClient implements vscode.Disposable {
 
             resolve();
         } catch (error) {
-            vscode.window.showErrorMessage(
+            showErrorMessage(
+                vscode,
                 vscode.l10n.t(
                     "Razor Language Server failed to stop correctly, please check the 'Razor Log' and report an issue."
                 )

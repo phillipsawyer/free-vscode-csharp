@@ -154,7 +154,7 @@ gulp.task('installDependencies', async () => {
     )!;
 
     try {
-        acquireAndInstallAllNugetPackages(vsixPlatformInfo, packageJSON, true);
+        await acquireAndInstallAllNugetPackages(vsixPlatformInfo, packageJSON, true);
     } catch (err) {
         const message = (err instanceof Error ? err.stack : err) ?? '<unknown error>';
         // NOTE: Extra `\n---` at the end is because gulp will print this message following by the
