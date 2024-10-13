@@ -20,7 +20,7 @@ jobs:
       with:
         dotnet-version: '7.x'
 
-    - name: Install Node.js 18.x
+    - name: Install Node.js 20.x
       uses: actions/setup-node@v3
       with:
         node-version: '20.x'
