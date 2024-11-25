@@ -1,7 +1,7 @@
 {
   "name": "csharp",
   "publisher": "muhammad-sammy",
-  "version": "2.50.25",
+  "version": "2.55.28",
   "description": "Free/Libre C# support for vscode-compatible editors.",
   "displayName": "C#",
   "author": "Muhammad Sammy",
@@ -37,11 +37,11 @@
     }
   },
   "defaults": {
-    "roslyn": "4.13.0-1.24477.2",
+    "roslyn": "4.13.0-2.24557.6",
     "omniSharp": "1.39.11",
-    "razor": "9.0.0-preview.24467.1",
+    "razor": "9.0.0-preview.24557.10",
     "razorOmnisharp": "7.0.0-preview.23363.1",
-    "xamlTools": "17.12.35326.17"
+    "xamlTools": "17.13.35431.11"
   },
   "main": "./dist/extension",
   "l10n": "./l10n",
@@ -134,7 +134,7 @@
     "@types/tmp": "0.0.33",
     "@types/unzipper": "^0.9.1",
     "@types/uuid": "^9.0.1",
-    "@types/vscode": "1.73.0",
+    "@types/vscode": "1.93.0",
     "@types/yauzl": "2.10.0",
     "@typescript-eslint/eslint-plugin": "^8.5.0",
     "@typescript-eslint/parser": "^8.5.0",
@@ -643,7 +643,7 @@
     }
   ],
   "engines": {
-    "vscode": "^1.75.0"
+    "vscode": "^1.93.0"
   },
   "activationEvents": [
     "onDebugInitialConfigurations",
@@ -1395,21 +1395,6 @@
             "default": false,
             "description": "%configuration.dotnet.server.waitForDebugger%"
           },
-          "dotnet.server.trace": {
-            "scope": "window",
-            "type": "string",
-            "enum": [
-              "Trace",
-              "Debug",
-              "Information",
-              "Warning",
-              "Error",
-              "Critical",
-              "None"
-            ],
-            "default": "Information",
-            "description": "%configuration.dotnet.server.trace%"
-          },
           "dotnet.server.extensionPaths": {
             "scope": "machine-overridable",
             "type": [
@@ -1432,6 +1417,11 @@
             "type": "boolean",
             "default": false,
             "description": "%configuration.dotnet.server.suppressLspErrorToasts%"
+          },
+          "dotnet.server.suppressMiscellaneousFilesToasts": {
+            "type": "boolean",
+            "default": false,
+            "description": "%configuration.dotnet.server.suppressMiscellaneousFilesToasts%"
           },
           "dotnet.server.useServerGC": {
             "type": "boolean",
@@ -1490,6 +1480,11 @@
             "default": false,
             "description": "%configuration.razor.languageServer.forceRuntimeCodeGeneration%",
             "order": 90
+          },
+          "razor.languageServer.suppressLspErrorToasts": {
+            "type": "boolean",
+            "default": true,
+            "description": "%configuration.razor.languageServer.suppressLspErrorToasts%"
           }
         }
       },
