@@ -6,7 +6,7 @@
 import * as coreclrdebug from './coreclrDebug/activate';
 import * as util from './common';
 import * as vscode from 'vscode';
-
+import { lt } from 'semver';
 import { ActivationFailure } from './shared/loggingEvents';
 import { CsharpChannelObserver } from './shared/observers/csharpChannelObserver';
 import { CsharpLoggerObserver } from './shared/observers/csharpLoggerObserver';
