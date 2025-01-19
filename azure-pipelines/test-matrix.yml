@@ -4,18 +4,20 @@ parameters:
   - name: containerName
     type: string
     default: ''
-  - name: installDotNet
-    type: boolean
+  - name: dotnetVersion
+    type: string
   - name: installAdditionalLinuxDependencies
     type: boolean
     default: false
+  - name: testVSCodeVersion
+    type: string
 
 jobs:
 - job:
   strategy:
     matrix:
       CSharpTests:
-        npmCommand: 'test:withoutDevKit'
+        npmCommand: 'test:unit' # Restore when integration test are stable: 'test:withoutDevKit'
       DevKitTests:
         npmCommand: test:integration:devkit
   pool: ${{ parameters.pool }}
@@ -24,6 +26,7 @@ jobs:
   steps:
   - template: /azure-pipelines/test.yml@self
     parameters:
-      installDotNet: true
+      dotnetVersion: ${{ parameters.dotnetVersion }}
       installAdditionalLinuxDependencies: true
       npmCommand: $(npmCommand)
+      testVSCodeVersion: ${{ parameters.testVSCodeVersion }}

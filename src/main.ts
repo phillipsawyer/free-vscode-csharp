@@ -45,6 +45,8 @@ import { ActionOption, showErrorMessage } from './shared/observers/utils/showMes
 export async function activate(
     context: vscode.ExtensionContext
 ): Promise<CSharpExtensionExports | OmnisharpExtensionExports | null> {
+    const csharpChannel = vscode.window.createOutputChannel('C#', { log: true });
+
     await MigrateOptions(vscode);
     const optionStream = createOptionStream(vscode);
 
@@ -65,7 +67,6 @@ export async function activate(
     // ensure it gets properly disposed. Upon disposal the events will be flushed.
     context.subscriptions.push(reporter);
 
-    const csharpChannel = vscode.window.createOutputChannel('C#', { log: true });
     const csharpchannelObserver = new CsharpChannelObserver(csharpChannel);
     const csharpLogObserver = new CsharpLoggerObserver(csharpChannel);
     eventStream.subscribe(csharpchannelObserver.post);
@@ -79,6 +80,35 @@ export async function activate(
     const useOmnisharpServer = !csharpDevkitExtension && commonOptions.useOmnisharpServer;
     if (useOmnisharpServer) {
         requiredPackageIds.push('OmniSharp');
+    }
+
+    const dotnetRuntimeExtensionId = 'ms-dotnettools.vscode-dotnet-runtime';
+    const requiredDotnetRuntimeExtensionVersion = '2.2.3';
+
+    const dotnetRuntimeExtension = vscode.extensions.getExtension(dotnetRuntimeExtensionId);
+    const dotnetRuntimeExtensionVersion = dotnetRuntimeExtension?.packageJSON.version;
+    if (lt(dotnetRuntimeExtensionVersion, requiredDotnetRuntimeExtensionVersion)) {
+        const button = vscode.l10n.t('Update and reload');
+        const prompt = vscode.l10n.t(
+            'The {0} extension requires at least {1} of the .NET Install Tool ({2}) extension. Please update to continue',
+            context.extension.packageJSON.displayName,
+            requiredDotnetRuntimeExtensionVersion,
+            dotnetRuntimeExtensionId
+        );
+        const selection = await vscode.window.showErrorMessage(prompt, button);
+        if (selection === button) {
+            await vscode.commands.executeCommand('workbench.extensions.installExtension', dotnetRuntimeExtensionId);
+            await vscode.commands.executeCommand('workbench.action.reloadWindow');
+        } else {
+            throw new Error(
+                vscode.l10n.t(
+                    'Version {0} of the .NET Install Tool ({1}) was not found, {2} will not activate.',
+                    requiredDotnetRuntimeExtensionVersion,
+                    dotnetRuntimeExtensionId,
+                    context.extension.packageJSON.displayName
+                )
+            );
+        }
     }
 
     // If the dotnet bundle is installed, this will ensure the dotnet CLI is on the path.
@@ -142,8 +172,8 @@ export async function activate(
         );
     } else {
         // activate language services
-        const dotnetTestChannel = vscode.window.createOutputChannel('.NET Test Log');
-        const dotnetChannel = vscode.window.createOutputChannel('.NET NuGet Restore');
+        const dotnetTestChannel = vscode.window.createOutputChannel(vscode.l10n.t('.NET Test Log'));
+        const dotnetChannel = vscode.window.createOutputChannel(vscode.l10n.t('.NET NuGet Restore'));
         omnisharpLangServicePromise = activateOmniSharpLanguageServer(
             context,
             platformInfo,

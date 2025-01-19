@@ -3,13 +3,13 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { ITestAssetWorkspace } from '../../../lsptoolshost/integrationTests/testAssets/testAssets';
+import { ITestAssetWorkspace } from './testAssets';
 
 const workspace: ITestAssetWorkspace = {
-    description: 'Basic Razor app',
+    description: 'Razor App',
     projects: [
         {
-            relativeFilePath: 'BasicRazorApp2_1.csproj',
+            relativeFilePath: 'RazorApp.csproj',
         },
     ],
 };

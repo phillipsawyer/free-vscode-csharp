@@ -12,7 +12,6 @@ import { ServerOptions } from 'vscode-languageclient/node';
 import { RazorLanguage } from './razorLanguage';
 import { RazorLanguageServerOptions } from './razorLanguageServerOptions';
 import { resolveRazorLanguageServerOptions } from './razorLanguageServerOptionsResolver';
-import { resolveRazorLanguageServerLogLevel } from './razorLanguageServerTraceResolver';
 import { RazorLogger } from './razorLogger';
 import { TelemetryReporter as RazorTelemetryReporter } from './telemetryReporter';
 import { randomUUID } from 'crypto';
@@ -52,12 +51,6 @@ export class RazorLanguageServerClient implements vscode.Disposable {
 
     public get initializeResult(): InitializeResult | undefined {
         return this.client.initializeResult;
-    }
-
-    public updateTraceLevel() {
-        const languageServerLogLevel = resolveRazorLanguageServerLogLevel(this.vscodeType);
-        this.setupLanguageServer();
-        this.logger.setTraceLevel(languageServerLogLevel);
     }
 
     public onStarted(listener: () => Promise<any>) {
@@ -113,6 +106,10 @@ export class RazorLanguageServerClient implements vscode.Disposable {
             await this.client.start();
             this.logger.logMessage('Server started, waiting for client to be ready...');
             this.isStarted = true;
+
+            // Server is ready, hook up so logging changes can be reported
+            this.logger.languageServerClient = this;
+
             for (const listener of this.onStartListeners) {
                 await listener();
             }
@@ -121,6 +118,7 @@ export class RazorLanguageServerClient implements vscode.Disposable {
             resolve();
 
             this.logger.logMessage('Server ready!');
+
             for (const listener of this.onStartedListeners) {
                 await listener();
             }
@@ -228,11 +226,9 @@ export class RazorLanguageServerClient implements vscode.Disposable {
     }
 
     private setupLanguageServer() {
-        const languageServerTrace = resolveRazorLanguageServerLogLevel(this.vscodeType);
         const options: RazorLanguageServerOptions = resolveRazorLanguageServerOptions(
             this.vscodeType,
             this.languageServerDir,
-            languageServerTrace,
             this.logger
         );
         this.clientOptions = {
@@ -245,8 +241,8 @@ export class RazorLanguageServerClient implements vscode.Disposable {
         this.logger.logMessage(`Razor language server path: ${options.serverPath}`);
 
         args.push('--logLevel');
-        args.push(options.logLevel.toString());
-        this.razorTelemetryReporter.reportTraceLevel(options.logLevel);
+        args.push(this.logger.logLevelForRZLS.toString());
+        this.razorTelemetryReporter.reportTraceLevel(this.logger.logLevel);
 
         if (options.debug) {
             this.razorTelemetryReporter.reportDebugLanguageServer();

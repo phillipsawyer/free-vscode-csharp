@@ -3,15 +3,8 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { ITestAssetWorkspace } from './testAssets';
+import { TextDocumentIdentifier } from 'vscode-languageserver-protocol';
 
-const workspace: ITestAssetWorkspace = {
-    description: 'Basic Razor app',
-    projects: [
-        {
-            relativeFilePath: 'BasicRazorApp2_1.csproj',
-        },
-    ],
-};
-
-export default workspace;
+export class RazorDynamicFileChangedParams {
+    constructor(public readonly razorDocument: TextDocumentIdentifier) {}
+}
