@@ -14,9 +14,9 @@ import { EOL, platform } from 'os';
 import { describe, expect, test } from '@jest/globals';
 
 export async function activateCSharpExtension(): Promise<void> {
-    const csharpExtension = vscode.extensions.getExtension<CSharpExtensionExports>('muhammad-sammy.csharp');
+    const csharpExtension = vscode.extensions.getExtension<CSharpExtensionExports>('ms-dotnettools.csharp');
     if (!csharpExtension) {
-        throw new Error('Failed to find installation of muhammad-sammy.csharp');
+        throw new Error('Failed to find installation of ms-dotnettools.csharp');
     }
 
     let shouldRestart = false;
@@ -47,7 +47,7 @@ export async function activateCSharpExtension(): Promise<void> {
     // Explicitly await the extension activation even if completed so that we capture any errors it threw during activation.
     await csharpExtension.activate();
     await csharpExtension.exports.initializationFinished();
-    console.log('muhammad-sammy.csharp activated');
+    console.log('ms-dotnettools.csharp activated');
     console.log(`Extension Log Directory: ${csharpExtension.exports.logDirectory}`);
 
     if (shouldRestart) {

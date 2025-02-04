@@ -1,6 +1,6 @@
 {
   "name": "csharp",
-  "publisher": "muhammad-sammy",
+  "publisher": "ms-dotnettools",
   "version": "2.61.28",
   "description": "Free/Libre C# support for vscode-compatible editors.",
   "displayName": "C#",
